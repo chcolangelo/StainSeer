@@ -4,9 +4,10 @@ import os;
 import RPi.GPIO as GPIO;
 import time;
 from picamzero import Camera
-import mgp321
+#import mpyg321
 import torch
 from PIL import Image
+import ultralytics
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(18,GPIO.OUT)
@@ -15,18 +16,21 @@ GPIO.output(18,GPIO.HIGH)
 time.sleep(1)
 print ("LED off")
 GPIO.output(18,GPIO.LOW)
-cam = Camera()
+#cam = Camera()
 
 j = 0
-while(true):
+while(True):
     
-    cam.start_preview()
-    cam.take_photo("~/Desktop/new_image" + j + ".jpg")
-    cam.stop_preview()
+    #cam.start_preview()
+    #cam.take_photo("~/Desktop/new_image" + j + ".jpg")
+    #cam.stop_preview()
 
     # Function to load the model
     def load_model(model_path):
-        model = torch.load(model_path)
+        dictstr = open(model_path, 'r') 
+        strtuple = dictstr.read()
+        print(strtuple)
+        model = torch.load(strtuple,weights_only=False)
         model.eval()  # Set the model to evaluation mode
         return model
 
@@ -40,7 +44,7 @@ while(true):
         return torch.tensor(img)
 
     # Load the model
-    model_path = "path/to/your/model.pt"
+    model_path = "/home/gscc6424/Downloads/StainSeer-main/yolo11n.pt"
     model = load_model(model_path)
 
     # Load the image and preprocess it
