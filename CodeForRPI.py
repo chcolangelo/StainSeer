@@ -1,59 +1,70 @@
 import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import os;
-import RPi.GPIO as GPIO;
+import cv2 #image processing
+#import RPi.GPIO as GPIO;
 import time;
-from picamzero import Camera
-#import mpyg321
-import torch
+#from picamzero import Camera #for the camera
 from PIL import Image
-import ultralytics
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-GPIO.setup(18,GPIO.OUT)
-print ("LED on")
-GPIO.output(18,GPIO.HIGH)
-time.sleep(1)
-print ("LED off")
-GPIO.output(18,GPIO.LOW)
+from pygame import mixer  # Audio
+#GPIO.setmode(GPIO.BCM)
+#GPIO.setwarnings(False)
+#GPIO.setup(18,GPIO.OUT)
+#print ("LED on")
+#GPIO.output(18,GPIO.HIGH)
+#time.sleep(1)
+#print ("LED off")
+#GPIO.output(18,GPIO.LOW)
 #cam = Camera()
-
-j = 0
-while(True):
+j=0
+while(j==0):
     
     #cam.start_preview()
     #cam.take_photo("~/Desktop/new_image" + j + ".jpg")
     #cam.stop_preview()
 
-    # Function to load the model
-    def load_model(model_path):
-        dictstr = open(model_path, 'r') 
-        strtuple = dictstr.read()
-        print(strtuple)
-        model = torch.load(strtuple,weights_only=False)
-        model.eval()  # Set the model to evaluation mode
-        return model
+    # Import the necessary libraries
+    # load the image and convert into
+    # diffrent channels
+    image = cv2.imread("C:\\Users\\gscc6\\Downloads\\stainsample.jpg")
+    b,g,r = cv2.split(image)
+    # asarray() class is used to convert
+    # PIL images into NumPy arrays
+    bluedata = np.asarray(b)
+    reddata = np.asarray(r)
+    greendata = np.asarray(g)
+    bavg= np.mean(bluedata)
+    ravg= np.mean(reddata)
+    gavg= np.mean(greendata)
+    bstd= np.std(bluedata)
+    rstd= np.std(reddata)
+    gstd= np.std(greendata)
 
-    # Function to preprocess the image before feeding it to the model
-    def preprocess_image(image_path):
-        img = Image.open(image_path).convert("RGB")
-        img = img.resize((4000, 3000))  # Resize to the model's expected input size
-        img = np.array(img).astype(np.float32) / 255.0  # Convert to a NumPy array and normalize
-        img = np.transpose(img, (2, 0, 1))  # Transpose the image to (channels, height, width)
-        img = np.expand_dims(img, axis=0)  # Add a batch dimension
-        return torch.tensor(img)
+    print(bavg,ravg,gavg)
+    print(bstd,rstd,gstd)
+    i=0
+    for y in bluedata:
+        for x in y:
+            if (x> bavg + 3*bstd or x < bavg - 3*bstd):
+                print("stain found")
+                i=i+1
+                break
+                for y in reddata:
+                    for x in y:
+                        if (x> ravg + 3*rstd or x < ravg - 3* rstd):
+                            print("stain found")
+                            i=i+1
+                            break
 
-    # Load the model
-    model_path = "/home/gscc6424/Downloads/StainSeer-main/yolo11n.pt"
-    model = load_model(model_path)
+                            for y in greendata:
+                                for x in y:
+                                    if (x> gavg + 3*gstd or x < gavg - 3*gstd):
+                                        print("stain found")
+                                        i=i+1
+                                        break
+    if (i>=1):
+        mixer.init()
+        mixer.music.load("C:\\Users\\gscc6\\Downloads\\StainSeer-main\\StainSeer-main\\beep-06.mp3")
+        mixer.music.play()
+    j=1
 
-    # Load the image and preprocess it
-    image_path = "path/to/your/image.jpg"
-    input_image = preprocess_image(image_path)
-
-    # Run the model
-    output = model(input_image)
-    probs = output.probs()
-    if(probs.top1==3 or probs.top1==5):
-            os.system('mpg321 ~/Desktop/beep-06.mp3')
-    j=j+1
