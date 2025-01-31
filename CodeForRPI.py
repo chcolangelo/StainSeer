@@ -2,7 +2,7 @@ import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import os;
 import cv2 #image processing
-#import RPi.GPIO as GPIO;
+import RPi.GPIO as GPIO;
 import time;
 #from picamzero import Camera #for the camera
 from PIL import Image
@@ -17,11 +17,11 @@ from pygame import mixer  # Audio
 #GPIO.output(18,GPIO.LOW)
 #cam = Camera()
 j=0
-while(j==0):
+while(True):
     
-    #cam.start_preview()
-    #cam.take_photo("~/Desktop/new_image" + j + ".jpg")
-    #cam.stop_preview()
+    cam.start_preview()
+    cam.take_photo("~/Desktop/new_image" + j + ".jpg")
+    cam.stop_preview()
 
     # Import the necessary libraries
     # load the image and convert into
