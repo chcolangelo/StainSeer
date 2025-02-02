@@ -2,11 +2,12 @@ import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import os;
 import cv2 #image processing
-import RPi.GPIO as GPIO;
+#import RPi.GPIO as GPIO;
 import time;
 #from picamzero import Camera #for the camera
 from PIL import Image
 from pygame import mixer  # Audio
+import threading
 #GPIO.setmode(GPIO.BCM)
 #GPIO.setwarnings(False)
 #GPIO.setup(18,GPIO.OUT)
@@ -17,11 +18,13 @@ from pygame import mixer  # Audio
 #GPIO.output(18,GPIO.LOW)
 #cam = Camera()
 j=0
+mixer.init()
+
 while(True):
-    
-    cam.start_preview()
-    cam.take_photo("~/Desktop/new_image" + j + ".jpg")
-    cam.stop_preview()
+    mixer.music.unload()
+    #cam.start_preview()
+    #cam.take_photo("~/Desktop/new_image" + j + ".jpg")
+    #cam.stop_preview()
 
     # Import the necessary libraries
     # load the image and convert into
@@ -40,31 +43,60 @@ while(True):
     rstd= np.std(reddata)
     gstd= np.std(greendata)
 
-    print(bavg,ravg,gavg)
-    print(bstd,rstd,gstd)
+    count = bluedata.size
+    print (count)
+    sleeptime = 5/count
+    #print(bavg,ravg,gavg)
+    #print(bstd,rstd,gstd)
+
     i=0
+    k=0
+    mixer.music.load("C:\\Users\\gscc6\Downloads\\beepbeepbeep-53921.mp3")
+    start = time.time()
     for y in bluedata:
         for x in y:
-            if (x> bavg + 3*bstd or x < bavg - 3*bstd):
-                print("stain found")
+            if (k % 10000 == 0):
+                mixer.music.play()
+                time.sleep(0.4)
+            if (x> bavg + bstd or x < bavg - bstd):
+                #print("stain found")
+                i=i+1 
+            k+=1
+            
+    k=0
+    
+    #if(i==0):
+    for y in reddata:
+        for x in y:
+            if (k % 10000 == 0):
+                mixer.music.play()
+                time.sleep(0.4)
+            if (x> ravg + rstd or x < ravg - rstd):
+                #print("stain found")
                 i=i+1
-                break
-                for y in reddata:
-                    for x in y:
-                        if (x> ravg + 3*rstd or x < ravg - 3* rstd):
-                            print("stain found")
-                            i=i+1
-                            break
+            time.sleep(sleeptime)
+            k+=1
 
-                            for y in greendata:
-                                for x in y:
-                                    if (x> gavg + 3*gstd or x < gavg - 3*gstd):
-                                        print("stain found")
-                                        i=i+1
-                                        break
+    k=0
+
+    #if(i==0):
+    for y in greendata:
+        for x in y:
+            if (k % 10000 == 0):
+                mixer.music.play()
+                time.sleep(0.4)
+            if (x> gavg + gstd or x < gavg - gstd):
+                #print("stain found")
+                i=i+1
+            time.sleep(sleeptime)
+            k+=1
+
     if (i>=1):
-        mixer.init()
+        mixer.music.unload()
         mixer.music.load("C:\\Users\\gscc6\\Downloads\\StainSeer-main\\StainSeer-main\\beep-06.mp3")
         mixer.music.play()
-    j=1
+    end = time.time()
+    print(end-start)
+    time.sleep(1)
+    j+=1
 
