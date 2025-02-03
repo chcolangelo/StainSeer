@@ -1,6 +1,8 @@
 import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import os;
+import random
+import string
 import cv2 #image processing
 #import RPi.GPIO as GPIO;
 import time;
@@ -17,11 +19,13 @@ import threading
 #print ("LED off")
 #GPIO.output(18,GPIO.LOW)
 #cam = Camera()
-j=0
 mixer.init()
 
 while(True):
     mixer.music.unload()
+    length = 8
+    j = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+    print(j)
     #cam.start_preview()
     #cam.take_photo("~/Desktop/new_image" + j + ".jpg")
     #cam.stop_preview()
@@ -98,5 +102,5 @@ while(True):
     end = time.time()
     print(end-start)
     time.sleep(1)
-    j+=1
+    
 
